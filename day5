@@ -1,0 +1,83 @@
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(reshape2)
+library(scales)
+
+# Load the data
+data <- read.csv("store_sales_data.csv")
+# Check for missing values
+sum(is.na(data))
+
+# Convert necessary columns to appropriate data types
+data$Region <- as.factor(data$Region)
+data$Month <- as.factor(data$Month)
+# Aggregate total sales by region and month
+sales_by_region_month <- data %>%
+  group_by(Region, Month) %>%
+  summarize(Total_Sales = sum(Total_Sales),
+            Number_Of_Customers = sum(Number_Of_Customers),
+            Average_Transaction_Value = mean(Average_Transaction_Value))
+# Plot total sales by region
+ggplot(sales_by_region_month, aes(x=Region, y=Total_Sales, fill=Region)) +
+  geom_bar(stat="identity") +
+  ggtitle("Total Sales by Region") +
+  xlab("Region") +
+  ylab("Total Sales")
+# Plot total sales by month
+ggplot(sales_by_region_month, aes(x=Month, y=Total_Sales, fill=Month)) +
+  geom_bar(stat="identity") +
+  ggtitle("Total Sales by Month") +
+  xlab("Month") +
+  ylab("Total Sales")
+# Histogram of total sales
+ggplot(data, aes(x=Total_Sales)) +
+  geom_histogram(binwidth=500, fill="blue", color="black") +
+  ggtitle("Distribution of Total Sales") +
+  xlab("Total Sales") +
+  ylab("Frequency")
+# Plot number of customers by month
+ggplot(sales_by_region_month, aes(x=Month, y=Number_Of_Customers, fill=Month)) +
+  geom_bar(stat="identity") +
+  ggtitle("Number of Customers by Month") +
+  xlab("Month") +
+  ylab("Number Of Customers")
+# Calculate statistics
+mean_value <- mean(data$Average_Transaction_Value)
+median_value <- median(data$Average_Transaction_Value)
+sd_value <- sd(data$Average_Transaction_Value)
+
+mean_value
+median_value
+sd_value
+# Trendline for total sales
+ggplot(data, aes(x=Month, y=Total_Sales)) +
+  geom_line(aes(group=1), color="blue") +
+  geom_smooth(method="lm", col="red") +
+  ggtitle("Trendline of Total Sales Over Time") +
+  xlab("Month") +
+  ylab("Total Sales")
+# Line plot for seasonal sales in each region
+ggplot(sales_by_region_month, aes(x=Month, y=Total_Sales, group=Region, color=Region)) +
+  geom_line() +
+  ggtitle("Seasonal Sales in Each Region") +
+  xlab("Month") +
+  ylab("Total Sales")
+# Scatter plot of total sales vs number of customers by region
+ggplot(data, aes(x=Number_Of_Customers, y=Total_Sales, color=Region)) +
+  geom_point() +
+  ggtitle("Sales vs Number of Customers by Region") +
+  xlab("Number Of Customers") +
+  ylab("Total Sales")
+# Install plotly if not already installed
+if (!require(plotly)) install.packages("plotly")
+
+# Load plotly
+library(plotly)
+
+# 3D scatter plot
+plot_ly(data, x = ~Number_Of_Customers, y = ~Total_Sales, z = ~Average_Transaction_Value, color = ~Region, colors = c('#BF382A', '#0C4B8E')) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'Number Of Customers'),
+                      yaxis = list(title = 'Total Sales'),
+                      zaxis = list(title = 'Average Transaction Value')))
